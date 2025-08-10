@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financial Independence Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      .input-focus:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: rgb(59, 130, 246);
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+          Financial Independence Calculator
+        </h1>
+        <p class="text-gray-600">
+          Or, how long to invest until passive income cover expenses sustainably
+        </p>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Input Panel -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">
+              Investment Parameters
+            </h2>
+            <!-- Basic Inputs -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Initial Capital (€)</label>
+                <input type="number" id="initialCapital" value="0" min="0" step="1000" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Lump sum you already possess
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Savings (€)</label>
+                <input type="number" id="monthlySavings" value="1500" min="0" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  How much you can save
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Expenses (€)</label>
+                <input type="number" id="monthlyExpenses" value="1000" min="0" step="100" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  How much you currently spend
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                <input type="number" id="age" value="30" min="18" max="100" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  How old you are now
+                </p>
+              </div>
+            </div>
+            <h3 class="text-lg font-medium text-gray-800 mt-6 mb-4">
+              Returns & Costs
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Expected Gross Annual Return (%)</label>
+                <input type="number" id="grossReturn" value="8" min="0" max="30" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Excluding costs, taxes, or inflation
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Total Expense Ratio (TER) (%)</label>
+                <input type="number" id="ter" value="0.2" min="0" max="5" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Annual management fee from the ETF / index fund
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Brokerage Fees (% per trade)</label>
+                <input type="number" id="brokerageFees" value="0.1" min="0" max="5" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Transaction fees from the broker
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bid-Ask Spread (% per trade)</label>
+                <input type="number" id="bidAskSpread" value="0.05" min="0" max="2" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Implicit transaction cost from the market maker
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Currency Fees (% per trade)</label>
+                <input type="number" id="currencyFees" value="0.1" min="0" max="2" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Implicit cost if operating with different currencies
+                </p>
+              </div>
+            </div>
+            <h3 class="text-lg font-medium text-gray-800 mt-6 mb-4">
+              Tax Settings
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Dividend Portion (%)
+                </label>
+                <input type="number" id="dividendPortion" value="30" min="0" max="100" step="1" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  How much of the returns are in dividends
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dividend Distribution</label>
+                <select id="dividendDistribution" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors">
+                  <option value="Accumulating">Accumulated</option>
+                  <option value="Distributing">Distributed</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Whether the index distributes dividends to you
+                </p>
+              </div>
+              <div id="dividendDistributionFields" class="space-y-4 opacity-50">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Tax on Distributions (%)</label>
+                  <input type="number" id="dividendTax" value="0" min="0" max="50" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                  <p class="text-xs text-gray-500 mt-1">
+                    Tax on distributed dividends
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Total Return Index</label>
+                <select id="triType" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors">
+                  <option value="NTR">Net Total Return (NTR)</option>
+                  <option value="GTR">Gross Total Return (GTR)</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Whether the index accounts for foreign withholding tax
+                </p>
+              </div>
+              <div id="foreignDividendFields" class="space-y-4 opacity-50">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Dividend Withholding Tax (%)</label>
+                  <input type="number" id="foreignDividendTax" value="0" min="0" max="50" step="0.1" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                  <p class="text-xs text-gray-500 mt-1">
+                    Foreign withholding tax
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Capital Gains Tax (%)</label>
+                <input type="number" id="capitalGainsTax" value="26" min="0" max="50" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Applied on profits realised on sales
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Wealth Tax (%)</label>
+                <input type="number" id="wealthTax" value="0.2" min="0" max="2" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Stamp duty
+                </p>
+              </div>
+            </div>
+            <h3 class="text-lg font-medium text-gray-800 mt-6 mb-4">
+              Economic Assumptions
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Annual Inflation Rate (%)</label>
+                <input type="number" id="inflationRate" value="3" min="0" max="15" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  How much prices for goods and services increase
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Annual Lifestyle Creep (%)</label>
+                <input type="number" id="lifestyleCreepRate" value="2" min="0" max="100" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Additional expense growth above inflation
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Children</label>
+                <input type="number" id="numChildren" value="0" min="0" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus transition-colors" />
+                <p class="text-xs text-gray-500 mt-1">
+                  Each child accounts for a 0.7% expense growth rate
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Results and Chart Panel -->
+        <div class="lg:col-span-2">
+          <!-- Results Panel -->
+          <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">
+              Financial Independence Results
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <h3 class="text-sm font-medium text-gray-600 mb-1">
+                  Years Until FI
+                </h3>
+                <p id="yearsToFI" class="text-2xl font-bold text-green-700">
+                  -
+                </p>
+              </div>
+              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="text-sm font-medium text-gray-600 mb-1">
+                  Age at FI
+                </h3>
+                <p id="ageAtFI" class="text-2xl font-bold text-blue-700">-</p>
+              </div>
+              <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                <h3 class="text-sm font-medium text-gray-600 mb-1">
+                  Final Capital
+                </h3>
+                <p id="finalCapital" class="text-2xl font-bold text-purple-700">
+                  -
+                </p>
+              </div>
+              <div class="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
+                <h3 class="text-sm font-medium text-gray-600 mb-1">
+                  Final Capital after taxes, inflation-adjusted
+                </h3>
+                <p id="realLiquidatedCapital" class="text-2xl font-bold text-indigo-700">
+                  -
+                </p>
+              </div>
+              <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-4 rounded-lg border border-orange-200">
+                <h3 class="text-sm font-medium text-gray-600 mb-1">
+                  Withdrawal Rate
+                </h3>
+                <p id="withdrawalRate" class="text-2xl font-bold text-orange-700">
+                  -
+                </p>
+              </div>
+            </div>
+            <!-- Additional Info -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div class="space-y-3 text-sm">
+                <div>
+                  <span class="font-medium text-gray-600">Net Real Return:</span>
+                  <span id="netRealReturn" class="text-gray-800 ml-2">-</span>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Annual return after all costs, taxes, and wealth tax deduction
+                  </p>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-600">Annual Trading Costs Breakdown:</span>
+                  <div id="tradingCostsBreakdown" class="text-gray-800 ml-2 mt-1 space-y-1">
+                    <div class="flex justify-between"><span>Brokerage fees:</span><span id="brokerageCost">-</span></div>
+                    <div class="flex justify-between"><span>Bid-ask spread:</span><span id="bidAskCost">-</span></div>
+                    <div class="flex justify-between"><span>Currency fees:</span><span id="currencyCost">-</span></div>
+                    <div class="flex justify-between border-t pt-1 font-medium"><span>Total:</span><span id="totalTradingCost">-</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Chart Panel -->
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">
+              Portfolio Projection
+            </h2>
+            <div class="relative" style="height: 400px;">
+              <canvas id="projectionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let chart;
+
+      // Format currency in EUR
+      const formatCurrency = (amount) => {
+        return new Intl.NumberFormat("de-DE", {
+          style: "currency",
+          currency: "EUR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(amount);
+      };
+
+      // Format percentage
+      const formatPercentage = (rate) => {
+        return new Intl.NumberFormat("de-DE", {
+          style: "percent",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(rate / 100);
+      };
+
+      // Calculate annual trading costs with breakdown
+      function calculateTradingCosts(monthlySavings, brokerageFees, bidAskSpread, currencyFees) {
+        const annualSavings = monthlySavings * 12;
+        const brokerageCost = annualSavings * (brokerageFees / 100);
+        const bidAskCost = annualSavings * (bidAskSpread / 100);
+        const currencyCost = annualSavings * (currencyFees / 100);
+        const totalCost = brokerageCost + bidAskCost + currencyCost;
+
+        return {
+          brokerage: brokerageCost,
+          bidAsk: bidAskCost,
+          currency: currencyCost,
+          total: totalCost,
+        };
+      }
+
+      // Calculate net annual return after all costs and taxes
+      function calculateNetReturn(grossReturn, ter, tradingCostsTotal, annualSavings, triType, dividendPortion, dividendTax, foreignDividendTax, wealthTax) {
+        // Convert percentages to decimals
+        const grossReturnDecimal = grossReturn / 100;
+        const terDecimal = ter / 100;
+        const wealthTaxDecimal = wealthTax / 100;
+
+        // Calculate trading costs as percentage of capital (approximation)
+        const tradingCostsRate = tradingCostsTotal / Math.max(annualSavings, 10000); // Avoid division by zero
+
+        // Net return before tax
+        let netReturnBeforeTax = grossReturnDecimal - terDecimal - tradingCostsRate;
+
+        // Apply dividend taxes, if any
+        let netReturnAfterTax = netReturnBeforeTax;
+
+        const dividendPortionDecimal = dividendPortion / 100;
+        const dividendTaxDecimal = dividendTax / 100;
+        const foreignDividendTaxDecimal = foreignDividendTax / 100;
+
+        // Apply dividend taxes
+        const nonDividendPortion = 1 - dividendPortionDecimal;
+        const dividendAfterTax = dividendPortionDecimal * (1 - dividendTaxDecimal - foreignDividendTaxDecimal);
+        netReturnAfterTax = netReturnBeforeTax * (nonDividendPortion + dividendAfterTax);
+
+        // Apply wealth tax
+        netReturnAfterTax = netReturnAfterTax - wealthTaxDecimal;
+
+        return netReturnAfterTax;
+      }
+
+      // Main calculation function
+      function calculateFI() {
+        // Get input values
+        const initialCapital = parseFloat(document.getElementById("initialCapital").value) || 0;
+        const monthlySavings = parseFloat(document.getElementById("monthlySavings").value) || 0;
+        const monthlyExpenses = parseFloat(document.getElementById("monthlyExpenses").value) || 0;
+        const age = parseFloat(document.getElementById("age").value) || 30;
+        const grossReturn = parseFloat(document.getElementById("grossReturn").value) || 8;
+        const ter = parseFloat(document.getElementById("ter").value) || 0.2;
+        const brokerageFees = parseFloat(document.getElementById("brokerageFees").value) || 0.1;
+        const bidAskSpread = parseFloat(document.getElementById("bidAskSpread").value) || 0.05;
+        const currencyFees = parseFloat(document.getElementById("currencyFees").value) || 0.1;
+        const triType = document.getElementById("triType").value;
+        const dividendPortion = parseFloat(document.getElementById("dividendPortion").value) || 30;
+        const dividendTax = parseFloat(document.getElementById("dividendTax").value) || 0;
+        const foreignDividendTax = parseFloat(document.getElementById("foreignDividendTax").value) || 0;
+        const wealthTax = parseFloat(document.getElementById("wealthTax").value) || 0.2;
+        const inflationRate = parseFloat(document.getElementById("inflationRate").value) || 3;
+        const lifestyleCreepRate = parseFloat(document.getElementById("lifestyleCreepRate").value) || 0;
+        const numChildren = parseFloat(document.getElementById("numChildren").value) || 0;
+        const childrenExpenseGrowthRate = numChildren * 0.7;
+        const expenseGrowthRate = lifestyleCreepRate + childrenExpenseGrowthRate;
+        // Calculate derived values
+        const annualSavings = monthlySavings * 12;
+        const annualExpenses = monthlyExpenses * 12;
+        const tradingCostsBreakdown = calculateTradingCosts(monthlySavings, brokerageFees, bidAskSpread, currencyFees);
+        const netRealReturn = calculateNetReturn(grossReturn, ter, tradingCostsBreakdown.total, annualSavings, triType, dividendPortion, dividendTax, foreignDividendTax, wealthTax);
+        const expenseRealGrowthRate = (expenseGrowthRate + inflationRate) / 100;
+        const capitalGainsTaxDecimal = parseFloat(document.getElementById("capitalGainsTax").value) / 100 || 0.26;
+        const inflationRateDecimal = inflationRate / 100;
+
+        // Update additional info display
+        document.getElementById("netRealReturn").textContent = formatPercentage(netRealReturn * 100);
+        document.getElementById("brokerageCost").textContent = formatCurrency(tradingCostsBreakdown.brokerage);
+        document.getElementById("bidAskCost").textContent = formatCurrency(tradingCostsBreakdown.bidAsk);
+        document.getElementById("currencyCost").textContent = formatCurrency(tradingCostsBreakdown.currency);
+        document.getElementById("totalTradingCost").textContent = formatCurrency(tradingCostsBreakdown.total);
+
+        // Check if FI is possible
+        if (netRealReturn <= expenseRealGrowthRate) {
+          document.getElementById("yearsToFI").textContent = "Never";
+          document.getElementById("ageAtFI").textContent = "-";
+          document.getElementById("finalCapital").textContent = "-";
+          document.getElementById("realLiquidatedCapital").textContent = "-";
+          document.getElementById("withdrawalRate").textContent = "-";
+          updateChart([], [], [], []);
+          return;
+        }
+
+        // Simulation variables
+        let capital = initialCapital;
+        let currentExpenses = annualExpenses;
+        let year = 0;
+        const maxYears = 50;
+        let fiReached = false;
+        let fiYear = -1;
+
+        // Data for chart
+        const years = [];
+        const capitalData = [];
+        const expensesData = [];
+        const requiredCapitalData = [];
+
+        // Simulation loop
+        while (year <= maxYears && !fiReached) {
+          years.push(year);
+          capitalData.push(capital);
+          expensesData.push(currentExpenses);
+
+          // Calculate required capital for FI: capital that can sustain withdrawals with growth matching expense growth
+          // Required capital = expenses / (netRealReturn - expenseRealGrowthRate)
+          const requiredCapital = currentExpenses / (netRealReturn - expenseRealGrowthRate);
+          requiredCapitalData.push(requiredCapital);
+
+          // Check FI condition
+          if (capital > 0) {
+            const withdrawalRate = currentExpenses / capital;
+            const leftoverYield = netRealReturn - withdrawalRate;
+
+            if (withdrawalRate <= netRealReturn && leftoverYield >= expenseRealGrowthRate) {
+              fiReached = true;
+              fiYear = year;
+              break;
+            }
+          }
+
+          // Update for next year
+          if (!fiReached) {
+            // Accumulation phase: add savings and compound returns
+            capital = capital * (1 + netRealReturn) + annualSavings;
+          } else {
+            // Withdrawal phase: withdraw expenses and compound remaining
+            const withdrawal = currentExpenses;
+            const leftoverYield = netRealReturn - withdrawal / capital;
+            capital = capital * (1 + leftoverYield);
+          }
+
+          currentExpenses = currentExpenses * (1 + expenseRealGrowthRate);
+          year++;
+        }
+
+        // Update results
+        if (fiReached) {
+          const finalCapitalValue = capitalData[fiYear];
+
+          // Calculate real liquidated capital (inflation-adjusted, after capital gains tax)
+          const nominalGains = Math.max(0, finalCapitalValue - initialCapital);
+          const realGains = nominalGains / Math.pow(1 + inflationRateDecimal, fiYear);
+          const capitalGainsTax = realGains * capitalGainsTaxDecimal;
+          const realLiquidatedCapital = finalCapitalValue - capitalGainsTax;
+          const inflationAdjustedLiquidated = realLiquidatedCapital / Math.pow(1 + inflationRateDecimal, fiYear);
+
+          document.getElementById("yearsToFI").textContent = fiYear.toString();
+          document.getElementById("ageAtFI").textContent = (age + fiYear).toString();
+          document.getElementById("finalCapital").textContent = formatCurrency(finalCapitalValue);
+          document.getElementById("realLiquidatedCapital").textContent = formatCurrency(inflationAdjustedLiquidated);
+          const finalWithdrawalRate = (expensesData[fiYear] / finalCapitalValue) * 100;
+          document.getElementById("withdrawalRate").textContent = formatPercentage(finalWithdrawalRate);
+        } else {
+          document.getElementById("yearsToFI").textContent = "Never";
+          document.getElementById("ageAtFI").textContent = "-";
+          document.getElementById("finalCapital").textContent = "-";
+          document.getElementById("realLiquidatedCapital").textContent = "-";
+          document.getElementById("withdrawalRate").textContent = "-";
+        }
+
+        // Update chart
+        updateChart(years, capitalData, expensesData, requiredCapitalData, fiYear);
+      }
+
+      // Update chart
+      function updateChart(years, capitalData, expensesData, requiredCapitalData, fiYear = -1) {
+        const ctx = document.getElementById("projectionChart").getContext("2d");
+
+        if (chart) {
+          chart.destroy();
+        }
+
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: years,
+            datasets: [
+              {
+                label: "Portfolio Capital",
+                data: capitalData,
+                borderColor: "rgb(59, 130, 246)",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                fill: false,
+                tension: 0.2,
+              },
+              {
+                label: "Annual Expenses",
+                data: expensesData,
+                borderColor: "rgb(239, 68, 68)",
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                fill: false,
+                tension: 0.2,
+              },
+              {
+                label: "Required Capital for FI",
+                data: requiredCapitalData,
+                borderColor: "rgb(16, 185, 129)",
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                fill: false,
+                tension: 0.2,
+                borderDash: [5, 5],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const label = context.dataset.label || "";
+                    const value = formatCurrency(context.parsed.y);
+                    return label + ": " + value;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Years",
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Amount (€)",
+                },
+                ticks: {
+                  callback: function (value) {
+                    return formatCurrency(value);
+                  },
+                },
+              },
+            },
+            annotations:
+              fiYear > -1
+                ? {
+                    line1: {
+                      type: "line",
+                      xMin: fiYear,
+                      xMax: fiYear,
+                      borderColor: "rgb(34, 197, 94)",
+                      borderWidth: 2,
+                      borderDash: [10, 5],
+                      label: {
+                        content: "Financial Independence",
+                        enabled: true,
+                        position: "end",
+                      },
+                    },
+                  }
+                : {},
+          },
+        });
+      }
+
+      // Handle TRI type change
+      function handleTriTypeChange() {
+        const triType = document.getElementById("triType").value;
+        const foreignDividendFields = document.getElementById("foreignDividendFields");
+        const foreignDividendTaxInput = document.getElementById("foreignDividendTax");
+
+        if (triType === "GTR") {
+          foreignDividendFields.classList.remove("opacity-50");
+          foreignDividendTaxInput.value = 15;
+          foreignDividendTaxInput.disabled = false;
+        } else {
+          foreignDividendFields.classList.add("opacity-50");
+          foreignDividendTaxInput.value = 0;
+          foreignDividendTaxInput.disabled = true;
+        }
+        calculateFI();
+      }
+
+      // Handle dividend distribution type change
+      function dividendDistributionChange() {
+        const dividendDistribution = document.getElementById("dividendDistribution").value;
+        const dividendDistributionFields = document.getElementById("dividendDistributionFields");
+        const dividendTaxInput = document.getElementById("dividendTax");
+
+        if (dividendDistribution === "Accumulating") {
+          dividendDistributionFields.classList.add("opacity-50");
+          dividendTaxInput.value = 0;
+          dividendTaxInput.disabled = true;
+        } else {
+          dividendDistributionFields.classList.remove("opacity-50");
+          dividendTaxInput.value = 26;
+          dividendTaxInput.disabled = false;
+        }
+        calculateFI();
+      }
+
+      // Event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add event listeners to all inputs
+        const inputs = document.querySelectorAll("input, select");
+        inputs.forEach((input) => {
+          input.addEventListener("input", calculateFI);
+          input.addEventListener("change", calculateFI);
+        });
+
+        // Special handler for TRI type
+        document.getElementById("triType").addEventListener("change", handleTriTypeChange);
+
+        // Special handler for dividendDistribution type
+        document.getElementById("dividendDistribution").addEventListener("change", dividendDistributionChange);
+
+        // Initial calculation
+        handleTriTypeChange();
+        calculateFI();
+      });
+    </script>
+  </body>
+</html>
